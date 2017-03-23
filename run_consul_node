@@ -1,1 +1,15 @@
-docker run -d --name consul -p 192.168.99.100:8300:8300 -p 192.168.99.100:8301:8301 -p 192.168.99.100:8301:8301/udp -p 192.168.99.100:8302:8302 -p 192.168.99.100:8302:8302/udp -p 192.168.99.100:8303:8303 -p 192.168.99.100:8303:8303/udp -p 192.168.99.100:8400:8400 -p 8500:8500 progrium/consul -server -node node1 -advertise 192.168.99.100 -bootstrap
+IP=/sbin/ifconfig eth1 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'
+
+docker run -d --name consul  \
+                -p $IP:8300:8300 \
+                -p $IP:8301:8301 \
+                -p $IP:8301:8301/udp \
+                -p $IP:8302:8302 \
+                -p $IP:8302:8302/udp \
+                -p $IP:8303:8303 \
+                -p $IP:8303:8303/udp \
+                -p $IP:8400:8400 \
+                -p 8500:8500 \
+                progrium/consul -server -node node1 \
+                -advertise 192.168.99.100 -bootstrap
+
