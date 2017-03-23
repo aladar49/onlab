@@ -1,0 +1,6 @@
+#/bin/bash
+
+export PATH="/tmp:$PATH"
+
+consul-template -consul-addr "192.168.99.100:8500" -template "/tmp/workdir/haproxy/haproxy.ctmpl:/tmp/workdir/haprox
+y/haproxy.cfg" &

@@ -1,0 +1,8 @@
+#Run php_webserver container
+docker run -d -v /tmp/workdir/php_webserver/www:/var/www/site \
+		--link my_db:mysql \
+		-p 80 \
+		-e "SERVICE_NAME=web" \
+		php_webserver
+
+
