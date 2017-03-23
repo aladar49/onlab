@@ -10,14 +10,21 @@ defaults
 
 listen http-in
     bind *:80
-    default_backend web
-
-backend web
+    mode http
     balance roundrobin {{ range service "web" }}
-    server {{ .Name }} {{ .Address }}:{{ .Port }}{{ end }}
+    server {{ .Name }} {{ .Address }}:{{ .Port }}{{ end }} check
 
-listen stats *:1936
+listen mysql
+    bind *:3306
+    mode tcp
+    balance roundrobin {{ range service "mysql" }}
+    server {{ .Name }} {{ .Address }}:{{ .Port }}{{ end }} check
+
+listen stats
+    mode http
+    bind *:1936
     stats enable
     stats uri /
     stats hide-version
     stats auth user:password
+
