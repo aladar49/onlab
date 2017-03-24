@@ -14,12 +14,6 @@ listen http-in
     balance roundrobin {{ range service "web" }}
     server {{ .Name }} {{ .Address }}:{{ .Port }}{{ end }} check
 
-listen mysql
-    bind *:3306
-    mode tcp
-    balance roundrobin {{ range service "mysql" }}
-    server {{ .Name }} {{ .Address }}:{{ .Port }}{{ end }} check
-
 listen stats
     mode http
     bind *:1936
