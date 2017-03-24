@@ -1,6 +1,5 @@
 docker run -d --name haproxy \
 		-p 80:80 \
 		-p 1936:1936 \
-		-p 3306:3306 \
 		-v /tmp/workdir/haproxy:/usr/local/etc/haproxy \
 		haproxy

@@ -1,8 +1,8 @@
 <?php
 $servername = 'MYSQL';
-$username ='user';# getenv("MYSQL_ENV_DB_USER");
-$password ='user';# getenv('MYSQL_ENV_DB_PASSWORD');
-$dbname ='world';# getenv('MYSQL_ENV_DB_DBNAME');
+$username ='user';
+$password ='user';
+$dbname ='world';
 
 $host= gethostname();
 

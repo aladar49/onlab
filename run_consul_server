@@ -1,4 +1,4 @@
-IP=/sbin/ifconfig eth1 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'
+IP=$(/sbin/ifconfig eth1 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}')
 
 docker run -d --name consul  \
                 -p $IP:8300:8300 \
@@ -11,5 +11,5 @@ docker run -d --name consul  \
                 -p $IP:8400:8400 \
                 -p 8500:8500 \
                 progrium/consul -server -node node1 \
-                -advertise 192.168.99.100 -bootstrap
+                -advertise $IP -bootstrap
 
