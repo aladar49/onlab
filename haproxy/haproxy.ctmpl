@@ -12,7 +12,7 @@ listen http-in
     bind *:80
     mode http
     balance roundrobin {{ range service "web" }}
-    server {{ .Name }} {{ .Address }}:{{ .Port }}{{ end }} check
+    server {{ .Name }} {{ .Address }}:{{ .Port }} check {{ end }}
 
 listen stats
     mode http

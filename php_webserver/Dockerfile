@@ -25,6 +25,9 @@ EXPOSE 80
 # Copy this repo into place.
 VOLUME /var/www/site
 
+# Copy prefork configuration file.
+COPY ./mpm_config/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf
+
 # Update the default apache site with the config we created.
 ADD apache-config.conf /etc/apache2/sites-enabled/000-default.conf
 

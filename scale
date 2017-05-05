@@ -1,0 +1,64 @@
+#!/bin/bash                                                                                           
+                                                                                                      
+readonly MAX_REQUEST_WORKER=10                                                                        
+readonly MIN_REPLICAS=$1                                                                                                                             
+readonly MAX_REPLICAS=$2                                                                                                                             
+readonly INCREMENT=$3                                                                                                                                
+                                                                                                                                                     
+# Last 3 measurement result                                                                                                                          
+usage_queue=(0.5 0.5 0.5)                                                                                                                            
+                                                                                                                                                     
+while :                                                                                                                                              
+do                                                                                                                                                   
+  echo "########################"                                                                                                                    
+                                                                                                                                                     
+  # Find the number of tasks running as part of a webserver service                                                                                  
+  number_of_replicas=$(docker service inspect --format='{{.Spec.Mode.Replicated.Replicas}}' webserver)                                               
+                                                                                                                                                     
+  # Get webserver service instances name in local node                                                                                               
+  containers=($( docker service ps -f "node=node1" webserver | awk  '{print $2}' | awk 'NR > 1') )                                                   
+                                                                                                                                                     
+  # Count MAX thread number                                                                                                                          
+  let "max_worker_thread = $MAX_REQUEST_WORKER * ${#containers[@]}"                                                                                  
+                                                                                                                                                     
+  running_thread=0                                                                                                                                   
+                                                                                                                                                     
+  # Count threat that current work                                                                                                                   
+  for i in "${containers[@]}"                                                                                                                        
+  do                                                                                                                                                 
+    let running_thread+=$(docker exec  $i.$(docker service ps -f "name=$i" webserver -q) ps aux |  # execute command on the container whic name is $i
+                          grep "apache2" | grep "www-data" |      # grep the lines that belong to apache2     
+                          awk '{print $8}' |                      # get the STAT column                       
+                          wc -l)                       # get the running thread and count it                  
+  done                                                                                                        
+                                                                                                              
+  usage=$(awk "BEGIN {print $running_thread / $max_worker_thread}")                                           
+  echo "Max worker thread: $max_worker_thread"                                                                
+  echo "Current runnung thread: $running_thread"                                                      
+  echo "Measured usage: $usage"                                                                       
+                                                                                                      
+  # Update usage queque                                                                               
+  usage_queue=("${usage_queue[@]}"  $usage)                                                           
+  usage_queue=(${usage_queue[@]:1}) 
+  
+  # Last 3 measurement results average                                                                                                               
+  average_usage=$(awk "BEGIN {print (${usage_queue[0]} + ${usage_queue[1]} + ${usage_queue[2]}) / 3}")                                               
+                                                                                                                                                     
+  echo "Last 3 measurement average usage: $average_usage"                                                                                            
+  echo "Current number of replicas : $number_of_replicas"                                                                                            
+                                                                                                                                                     
+  # Scale up                                                                                                                                         
+  if [[ ( $average_usage > 0.8 )  && ( $number_of_replicas -lt $MAX_REPLICAS ) ]];then                                                               
+    let "number_of_replicas += $INCREMENT"                                                                    
+    docker service scale webserver=$number_of_replicas >/dev/null 2>&1                                        
+    tmp=$(docker service inspect --format='{{.Spec.Mode.Replicated.Replicas}}' webserver)                     
+    echo "Modifield number of replicas : $tmp"                                                                
+  # Scale down                                                                                                
+  elif [[ $average_usage < 0.4 ]] && [[ $number_of_replicas -gt $MIN_REPLICAS ]];then                         
+    let "number_of_replicas -= $INCREMENT"                                                                    
+    docker service scale webserver=$number_of_replicas >/dev/null 2>&1                                
+    tmp=$(docker service inspect --format='{{.Spec.Mode.Replicated.Replicas}}' webserver)             
+    echo "Modifield number of replicas: $tmp"                                                         
+  fi                                                                                                  
+  sleep 3                                                                                             
+done          

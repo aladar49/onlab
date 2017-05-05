@@ -6,8 +6,10 @@ $dbname ='world';
 
 $host= gethostname();
 
+echo "<h1>Virtual machine: node1</h1>";
 echo "<h1>Docker containers IP address: ". gethostbyname($host) ."</h1>";
 echo "<h2>Docker container ID: ". $host."</h2>";
+sleep(2);
 
 //connection to the database
 $conn = new mysqli($servername, $username, $password, $dbname);
